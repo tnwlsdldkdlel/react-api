@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/react?serverTimezone=Asia/Seoul
+    username: root
+    password: tnwls5722!
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+ # show_sql: true
+        format_sql: true
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+   
+logging.level:
+  org.hibernate.SQL: debug
+  
+  
