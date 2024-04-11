@@ -32,11 +32,11 @@ public class TodoRepositoryImpl implements TodoRepository {
 	@Override
 	public List<TodoDto> findAll(PageDto pageDto) {
 		QTodo qTodo = QTodo.todo;
-		
+
 		QueryResults<TodoDto> queryResults = queryFactory
 			.select(Projections.constructor(TodoDto.class, qTodo))
 			.from(qTodo)
-			.offset(pageDto.getStartPage() -1)
+			.offset((pageDto.getPage()- 1) * pageDto.getSize())
 			.limit(pageDto.getSize())
 			.orderBy(qTodo.seq.desc())
 			.fetchResults();
@@ -79,7 +79,8 @@ public class TodoRepositoryImpl implements TodoRepository {
 		
 		queryFactory
 			.delete(qTodo)
-			.where(qTodo.seq.eq(seq));
+			.where(qTodo.seq.eq(seq))
+			.execute();
 	}
 
 }
