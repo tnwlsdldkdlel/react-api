@@ -2,11 +2,15 @@ package com.react.api.security.filter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.google.gson.Gson;
+import com.react.api.security.CustomUser;
 import com.react.api.util.JWTUtil;
 
 import jakarta.servlet.FilterChain;
@@ -25,6 +29,11 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 		String path = request.getRequestURI();
 		log.info("check uri => " + path);
+		
+		// 로그인 페이지에서 체크 못하도록
+		if(path.startsWith("/v1/member/")) {
+			return true;
+		}
 
 		return false;
 	}
@@ -51,8 +60,25 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 			Map<String, Object> claims = JWTUtil.validateToken(asscessToken);
 
 			log.info(claims);
-
+			
+			// 로그인 했다면 JWT 토큰에서 정보 가져오기.
+			String email = (String) claims.get("email");
+			String pw = (String) claims.get("pw");
+			String nickname = (String) claims.get("nickname");
+			Boolean social = (Boolean) claims.get("social");
+			List<String> roleNames = (List<String>) claims.get("roleNames");
+			
+			CustomUser customUser = new CustomUser(email, pw, nickname, false, roleNames);
+			
+			log.info("===============================");
+			log.info(customUser);
+			log.info(customUser.getAuthorities());
+			
+			// 인증된 객체인지 확인
+			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(customUser, pw, customUser.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 		} catch (Exception e) {
+			log.info(e.getMessage());
 			Gson gson = new Gson();
 			String msg = gson.toJson(Map.of("error", "ERROR_ACCESS_TOKEN"));
 			response.setContentType("application/json");

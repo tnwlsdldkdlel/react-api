@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.react.api.security.filter.JWTCheckFilter;
 import com.react.api.security.handler.APILoginFailHandler;
 import com.react.api.security.handler.APILoginSuccessHandler;
+import com.react.api.security.handler.CustomAccessDeniedHandler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class CustomSecurityConfig {
 
 	@Bean
@@ -57,6 +60,11 @@ public class CustomSecurityConfig {
 		
 		// JWTCheckFilter는 UsernamePasswordAuthenticationFilter 이전에 실행
 		httpSecurity.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
+		
+		// 권한이 제한되어 있는 경우에 대한 hanlder
+		httpSecurity.exceptionHandling(config -> {
+			config.accessDeniedHandler(new CustomAccessDeniedHandler());
+		});
 
 		return httpSecurity.build();
 	}
